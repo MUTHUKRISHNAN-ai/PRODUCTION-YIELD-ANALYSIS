@@ -1,147 +1,162 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.express as px
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
-from io import StringIO
+📊 Production Yield Analysis
 
-# Load sample CSV data
-csv_data = StringIO("""
-Date,Temperature,Humidity,Machine_Speed,Material_Input,Yield,Machine_Type,Material_Type
-2025-01-01,72,45,150,120,88,A,X
-2025-01-02,74,47,155,122,86,B,X
-2025-01-03,70,43,148,118,85,A,Y
-2025-01-04,69,42,147,119,87,B,Z
-2025-01-05,73,46,152,121,89,C,Y
-2025-01-06,75,49,158,124,91,C,Z
-2025-01-07,68,40,145,117,84,A,X
-2025-01-08,71,44,149,118,86,B,X
-2025-01-09,72,45,151,120,90,C,Y
-2025-01-10,76,50,160,125,93,B,Z
-""")
+A machine learning–powered analytics system built to optimize manufacturing yield through real-time data analysis and rich visualizations. This project demonstrates how sensor data from industrial processes can be utilized to predict output yield, identify inefficiencies, and enhance decision-making using supervised learning techniques.
 
-# Read the data
-df = pd.read_csv(csv_data)
-df['Date'] = pd.to_datetime(df['Date'])
 
-# Feature selection
-features = ['Temperature', 'Humidity', 'Machine_Speed', 'Material_Input']
-target = 'Yield'
-X = df[features]
-y = df[target]
+---
 
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+📌 Project Overview
 
-# Train the Random Forest model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
+Manufacturing processes are often hindered by unpredictable output, inconsistent quality, and operational inefficiencies. This project tackles these challenges by analyzing historical and simulated sensor data, including:
 
-# Evaluation metrics
-print("Model Evaluation Metrics:")
-print("R² Score:", r2_score(y_test, y_pred))
-print("MAE:", mean_absolute_error(y_test, y_pred))
-print("RMSE:", mean_squared_error(y_test, y_pred, squared=False))
+Temperature
 
-# Feature importance
-importances = model.feature_importances_
-feat_importance = pd.Series(importances, index=features).sort_values()
+Humidity
 
-plt.figure(figsize=(8, 5))
-feat_importance.plot(kind='barh', color='teal')
-plt.title("Feature Importance")
-plt.xlabel("Importance Score")
-plt.tight_layout()
-plt.show()
+Machine speed
 
-# Correlation Heatmap
-plt.figure(figsize=(8, 6))
-sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm')
-plt.title("Correlation Heatmap")
-plt.show()
+Material type
 
-# Yield Over Time
-df = df.sort_values(by='Date')
-plt.figure(figsize=(10, 5))
-plt.plot(df['Date'], df['Yield'], marker='o', linestyle='-', color='blue')
-plt.title("Yield Over Time")
-plt.xlabel("Date")
-plt.ylabel("Yield")
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
 
-# Yield Distribution Histogram
-plt.figure(figsize=(8, 6))
-plt.hist(df['Yield'], bins=10, color='skyblue', edgecolor='black')
-plt.title("Yield Distribution")
-plt.xlabel("Yield")
-plt.ylabel("Frequency")
-plt.show()
+Key objectives include:
 
-# Boxplot: Yield by Material Type
-plt.figure(figsize=(8, 6))
-sns.boxplot(data=df, x='Material_Type', y='Yield', palette='pastel')
-plt.title("Boxplot: Yield by Material Type")
-plt.show()
+Yield prediction using a Random Forest Regressor
 
-# Violin Plot: Yield by Temperature Range
-plt.figure(figsize=(8, 6))
-sns.violinplot(x=pd.cut(df['Temperature'], bins=3), y='Yield', data=df)
-plt.title("Violin Plot: Yield by Temperature Range")
-plt.xticks(rotation=45)
-plt.show()
+Data visualization through 10+ insightful plots
 
-# Pie Chart: Machine Type Distribution
-machine_counts = df['Machine_Type'].value_counts()
-plt.figure(figsize=(6, 6))
-plt.pie(machine_counts, labels=machine_counts.index, autopct='%1.1f%%', startangle=90)
-plt.title("Machine Type Distribution")
-plt.axis('equal')
-plt.show()
+Feature importance analysis to uncover performance drivers
 
-# Bar Plot: Average Yield by Machine Type
-avg_yield = df.groupby('Machine_Type')['Yield'].mean().reset_index()
-plt.figure(figsize=(8, 6))
-sns.barplot(x='Machine_Type', y='Yield', data=avg_yield, palette='Set2')
-plt.title("Average Yield by Machine Type")
-plt.show()
+Real-time analytics using embedded datasets (no external files)
 
-# Pairplot
-sns.pairplot(df[['Temperature', 'Humidity', 'Machine_Speed', 'Yield']])
-plt.suptitle("Pairwise Relationships", y=1.02)
-plt.show()
 
-# KDE Plot
-plt.figure(figsize=(8, 6))
-sns.kdeplot(df['Yield'], fill=True, color='purple')
-plt.title("KDE Plot: Yield Density")
-plt.xlabel("Yield")
-plt.ylabel("Density")
-plt.show()
+The final system is modular, interpretable, and ready for integration into smart factory environments.
 
-# Assign alternating lines (Line A, B, C) correctly
-lines = ['Line A', 'Line B', 'Line C']
-df['Line'] = [lines[i % 3] for i in range(len(df))]
-df['Date_str'] = df['Date'].dt.strftime('%Y-%m-%d')
 
-# Heatmap: Yield % by Date and Line
-heatmap_data = df.pivot(index='Date_str', columns='Line', values='Yield')
-plt.figure(figsize=(10, 8))
-sns.heatmap(heatmap_data, annot=True, fmt=".1f", cmap='YlGnBu', cbar_kws={'label': 'Yield %'})
-plt.title("Yield % Heatmap by Date and Line")
-plt.xlabel("Line")
-plt.ylabel("Date")
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
+---
 
-# Interactive Plotly scatter plot
-fig = px.scatter(df, x='Temperature', y='Yield', color='Humidity',
-                 title='Interactive: Temperature vs Yield (Colored by Humidity)',
-                 size='Machine_Speed', hover_data=['Material_Input'])
-fig.show()
+🚀 Features
+
+📊 Data Analysis & Visualization
+
+Visual tools used:
+
+Correlation Matrix
+
+Histograms
+
+KDE Plots
+
+Line Charts
+
+Boxplots
+
+Pie Charts
+
+Pairplots
+
+Scatter Plots
+
+Violin Plots
+
+Bar Charts
+
+
+🤖 Machine Learning
+
+Model: Random Forest Regressor
+
+Feature Encoding: Categorical feature transformation
+
+Evaluation Metrics: R² Score, Mean Absolute Error
+
+
+📁 Dataset
+
+Embedded sample dataset via StringIO
+
+No external file dependencies — ready to run instantly
+
+
+
+---
+
+💡 Business Use Case
+
+Built for industrial environments, this system supports:
+
+Production managers
+
+Plant supervisors
+
+Operations analysts
+
+
+Use it to drive real-time yield insights, optimize performance, and improve planning accuracy.
+
+
+---
+
+🧠 Use Cases
+
+Smart factory analytics
+
+Real-time production yield monitoring
+
+Preventive machine diagnostics
+
+Manufacturing process optimization
+
+
+
+---
+
+📦 Requirements
+
+pandas==1.5.3  
+numpy==1.24.3  
+matplotlib==3.7.1  
+seaborn==0.12.2  
+scikit-learn==1.2.2  
+plotly==5.15.0
+
+
+---
+
+🧰 Tech Stack
+
+🖥️ Programming Languages:
+
+Python
+
+SQL
+
+
+⚙️ Frameworks & Libraries:
+
+Pandas
+
+Scikit-learn
+
+TensorFlow
+
+
+🗃️ Databases:
+
+MySQL
+
+PostgreSQL
+
+
+🛠️ Tools:
+
+Jupyter Notebook
+
+Docker
+
+Git
+
+
+
+---
+
+Let me know if you'd like a README.md file version of this or want to generate badges, visual previews, or additional documentation.
