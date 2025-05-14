@@ -1,170 +1,147 @@
-
-Production Yield Analysis
-
-A Data-Driven ML System for Predicting & Optimizing Manufacturing Yield
-Using Python, Visualizations, and IoT Integration
-
-
----
-
-📌 Project Overview
-
-Manufacturing environments often struggle with unpredictable output, process inefficiencies, and inconsistent product quality. This project introduces a machine learning–powered production analytics system that leverages real-time and historical industrial sensor data (e.g., temperature, humidity, machine speed, material type) to:
-
-Predict production yield using machine learning models
-
-Visualize operational trends and relationships with advanced plotting
-
-Identify performance drivers via correlation and feature importance
-
-Enable real-time insights with embedded sample data (no external files needed)
-
-
-The system is modular, interpretable, and designed for seamless integration into smart factory ecosystems.
-
-
----
-
-🚀 Key Features
-
-📊 Data Analysis & Visualization
-
-10+ interactive plots to explore data and trends:
-
-Correlation Matrix
-
-Histogram
-
-KDE Plot
-
-Line Chart
-
-Boxplot
-
-Pie Chart
-
-Pairplot
-
-Scatter Plot
-
-Violin Plot
-
-Bar Chart
-
-
-
-🤖 Machine Learning
-
-Random Forest Regressor for yield prediction
-
-Encoded categorical variables for clean input data
-
-Evaluated using:
-
-R² Score
-
-Mean Absolute Error (MAE)
-
-
-
-📁 Self-contained Dataset
-
-Dataset embedded using StringIO for quick demos
-
-No external file dependencies
-
-
-
----
-
-💡 Business Use Case
-
-Tailored for industrial manufacturing sectors, this tool empowers:
-
-Production Managers
-
-Plant Supervisors
-With actionable insights to:
-
-Optimize production planning
-
-Monitor yield in real-time
-
-Diagnose equipment inefficiencies
-
-Enable preventive maintenance strategies
-
-
-
----
-
-🧠 Use Cases
-
-Smart factory analytics
-
-Real-time yield prediction
-
-Machine diagnostics
-
-Process optimization
-
-Decision support systems
-
-
-
----
-
-⚙️ Tech Stack
-
-🖥️ Programming
-
-Python
-
-SQL
-
-
-📚 Frameworks & Libraries
-
-Pandas
-
-NumPy
-
-Scikit-learn
-
-TensorFlow
-
-Matplotlib
-
-Seaborn
-
-Plotly
-
-
-🗃️ Databases
-
-MySQL
-
-PostgreSQL
-
-
-🛠️ Tools
-
-Jupyter Notebook
-
-Docker
-
-Git
-
-
-
----
-
-📦 Requirements
-
-pandas==1.5.3  
-numpy==1.24.3  
-matplotlib==3.7.1  
-seaborn==0.12.2  
-scikit-learn==1.2.2  
-plotly==5.15.0
-
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from io import StringIO
+
+# Load sample CSV data
+csv_data = StringIO("""
+Date,Temperature,Humidity,Machine_Speed,Material_Input,Yield,Machine_Type,Material_Type
+2025-01-01,72,45,150,120,88,A,X
+2025-01-02,74,47,155,122,86,B,X
+2025-01-03,70,43,148,118,85,A,Y
+2025-01-04,69,42,147,119,87,B,Z
+2025-01-05,73,46,152,121,89,C,Y
+2025-01-06,75,49,158,124,91,C,Z
+2025-01-07,68,40,145,117,84,A,X
+2025-01-08,71,44,149,118,86,B,X
+2025-01-09,72,45,151,120,90,C,Y
+2025-01-10,76,50,160,125,93,B,Z
+""")
+
+# Read the data
+df = pd.read_csv(csv_data)
+df['Date'] = pd.to_datetime(df['Date'])
+
+# Feature selection
+features = ['Temperature', 'Humidity', 'Machine_Speed', 'Material_Input']
+target = 'Yield'
+X = df[features]
+y = df[target]
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the Random Forest model
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Evaluation metrics
+print("Model Evaluation Metrics:")
+print("R² Score:", r2_score(y_test, y_pred))
+print("MAE:", mean_absolute_error(y_test, y_pred))
+print("RMSE:", mean_squared_error(y_test, y_pred, squared=False))
+
+# Feature importance
+importances = model.feature_importances_
+feat_importance = pd.Series(importances, index=features).sort_values()
+
+plt.figure(figsize=(8, 5))
+feat_importance.plot(kind='barh', color='teal')
+plt.title("Feature Importance")
+plt.xlabel("Importance Score")
+plt.tight_layout()
+plt.show()
+
+# Correlation Heatmap
+plt.figure(figsize=(8, 6))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm')
+plt.title("Correlation Heatmap")
+plt.show()
+
+# Yield Over Time
+df = df.sort_values(by='Date')
+plt.figure(figsize=(10, 5))
+plt.plot(df['Date'], df['Yield'], marker='o', linestyle='-', color='blue')
+plt.title("Yield Over Time")
+plt.xlabel("Date")
+plt.ylabel("Yield")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# Yield Distribution Histogram
+plt.figure(figsize=(8, 6))
+plt.hist(df['Yield'], bins=10, color='skyblue', edgecolor='black')
+plt.title("Yield Distribution")
+plt.xlabel("Yield")
+plt.ylabel("Frequency")
+plt.show()
+
+# Boxplot: Yield by Material Type
+plt.figure(figsize=(8, 6))
+sns.boxplot(data=df, x='Material_Type', y='Yield', palette='pastel')
+plt.title("Boxplot: Yield by Material Type")
+plt.show()
+
+# Violin Plot: Yield by Temperature Range
+plt.figure(figsize=(8, 6))
+sns.violinplot(x=pd.cut(df['Temperature'], bins=3), y='Yield', data=df)
+plt.title("Violin Plot: Yield by Temperature Range")
+plt.xticks(rotation=45)
+plt.show()
+
+# Pie Chart: Machine Type Distribution
+machine_counts = df['Machine_Type'].value_counts()
+plt.figure(figsize=(6, 6))
+plt.pie(machine_counts, labels=machine_counts.index, autopct='%1.1f%%', startangle=90)
+plt.title("Machine Type Distribution")
+plt.axis('equal')
+plt.show()
+
+# Bar Plot: Average Yield by Machine Type
+avg_yield = df.groupby('Machine_Type')['Yield'].mean().reset_index()
+plt.figure(figsize=(8, 6))
+sns.barplot(x='Machine_Type', y='Yield', data=avg_yield, palette='Set2')
+plt.title("Average Yield by Machine Type")
+plt.show()
+
+# Pairplot
+sns.pairplot(df[['Temperature', 'Humidity', 'Machine_Speed', 'Yield']])
+plt.suptitle("Pairwise Relationships", y=1.02)
+plt.show()
+
+# KDE Plot
+plt.figure(figsize=(8, 6))
+sns.kdeplot(df['Yield'], fill=True, color='purple')
+plt.title("KDE Plot: Yield Density")
+plt.xlabel("Yield")
+plt.ylabel("Density")
+plt.show()
+
+# Assign alternating lines (Line A, B, C) correctly
+lines = ['Line A', 'Line B', 'Line C']
+df['Line'] = [lines[i % 3] for i in range(len(df))]
+df['Date_str'] = df['Date'].dt.strftime('%Y-%m-%d')
+
+# Heatmap: Yield % by Date and Line
+heatmap_data = df.pivot(index='Date_str', columns='Line', values='Yield')
+plt.figure(figsize=(10, 8))
+sns.heatmap(heatmap_data, annot=True, fmt=".1f", cmap='YlGnBu', cbar_kws={'label': 'Yield %'})
+plt.title("Yield % Heatmap by Date and Line")
+plt.xlabel("Line")
+plt.ylabel("Date")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# Interactive Plotly scatter plot
+fig = px.scatter(df, x='Temperature', y='Yield', color='Humidity',
+                 title='Interactive: Temperature vs Yield (Colored by Humidity)',
+                 size='Machine_Speed', hover_data=['Material_Input'])
+fig.show()
