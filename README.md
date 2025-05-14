@@ -154,9 +154,3 @@ Jupyter Notebook
 Docker
 
 Git
-
-
-
----
-
-Let me know if you'd like a README.md file version of this or want to generate badges, visual previews, or additional documentation.
